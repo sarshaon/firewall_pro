@@ -2,7 +2,6 @@
 
 This article is shown for configuring custom firewall using iptables & pfense.
 
-
 ## Introduction to Firewalls
 
 A **firewall** is a security system that monitors and controls incoming and outgoing network traffic based on predetermined security rules. Its primary purpose is to create a barrier between a trusted internal network and untrusted external networks, such as the internet, to protect against unauthorized access, cyberattacks, and data breaches.
@@ -29,6 +28,7 @@ By controlling data flow based on rules, firewalls help prevent unauthorized acc
 
 
 ---
+## Firewall we'll use
 Here we'll be talking about software based firewalls only. We can use either `iptables(for linux)` or `pfsense(for FreeBSD-Based Systems)` to create firewall. iptables is a packet filter and pfSense is a NGFW) There are many other tools also for firewall.Like-
 
 | **Operating System**       | **Custom Firewall Tools**                                                                 |
@@ -56,7 +56,7 @@ Depending on different criterias different tools are best. But overall for gener
 
 
 
-### Creating firewall using iptables:
+## Creating firewall using iptables:
 As mentioned, iptables allows for deep customization and fine-grained control over `packet filtering`, `NAT`, and `connection tracking`.From the name of iptables we can assume that it is a collection of set of tables.
 [Link to NAT](#subfield-1)
 
@@ -97,19 +97,43 @@ Each table serves a distinct role and interacts with specific chains to define h
 
 
 
+---
+Data is transferred through the OSI model in a layered process:
+
+1. **Application Layer**: The sender’s application generates the data (e.g., an email).It provides services like file transfers, email, web browsing, and network management by enabling communication between software applications over a network. It ensures data is presented in a user-friendly format and supports protocols like HTTP, FTP, DNS, and SMTP for various internet and network functions.
+2. **Presentation Layer**: Data is formatted, encrypted, or compressed.Provided by the correspondant app, not by the os. 
+3. **Session Layer**: A session is established and maintained for communication.Authentication,Authorization,Session restoration,webinar. Provided by the correspondant app, not by the os. 
+4. **Transport Layer**: Data is broken into smaller segments, and error-checking (e.g., TCP) is applied. End to End(Port to Port delivery), Reliability(for inorder delivery TCP and for unorder devlivery UDP is used), error control(checksum is used),congession control, Flow control(destination sends the window size first and according to that size of the segmentation size is assumed), MUX & DEMUX is used to maintain instraction of many applications (many to one TO one to many).
+5. **Network Layer**: Routing information (IP addresses) is added for delivery across different networks.Host to  Host(Source to destination), Logical decision to send(IP contains Network and Host), Routing(Uses different router which decides the shortest paths using RIP/OSPF algorithms), Fragmantation(divide data into small portions), Congession control(gives feedback if there's any problem in any node) 
+6. **Data Link Layer**: Frames are created with MAC addresses for local delivery.Hop to Hop/Node to Node delivery, Flow control(node to node, checks the size and speed of data accordind to recievers capacity), error control(node to node), access control, Mac address, frames.
+7. **Physical Layer**: The actual transmission of raw bits occurs over physical media (cables, wireless). bit to signal, signal to bit happens here.
 
 
 
 
-
-
-
-
-
-
-
-
-
+### Application layer protocols along with their port numbers & transfer protocols:
+| **Protocol**        | **Port Number** | **Transport Protocol** | **Use**                                                                 |
+|----------------------|-----------------|-------------------------|-------------------------------------------------------------------------|
+| HTTP                | 80              | TCP                     | Used for transferring web pages and resources over the internet.       |
+| HTTPS               | 443             | TCP                     | Secure version of HTTP using SSL/TLS for encrypted communication.       |
+| FTP (Data)          | 20              | TCP                     | Transfers data files between systems.                                   |
+| FTP (Control)       | 21              | TCP                     | Manages the connection and control commands for FTP.                   |
+| SSH                 | 22              | TCP                     | Provides secure remote login and command execution.                     |
+| Telnet              | 23              | TCP                     | Used for remote command-line access (insecure, largely deprecated).     |
+| SMTP                | 25              | TCP                     | Sends email between servers and from clients to servers.                |
+| DNS                 | 53              | TCP/UDP                 | Resolves domain names to IP addresses and vice versa.                   |
+| POP3                | 110             | TCP                     | Retrieves emails from a mail server (downloads and removes from server).|
+| IMAP                | 143             | TCP                     | Retrieves emails, allowing synchronization across multiple devices.     |
+| LDAP                | 389             | TCP/UDP                 | Accesses and manages directory services like user information.          |
+| LDAPS               | 636             | TCP                     | Secure version of LDAP using SSL/TLS for encrypted communication.       |
+| DHCP (Server)       | 67              | UDP                     | Assigns IP addresses to devices on a network dynamically.               |
+| DHCP (Client)       | 68              | UDP                     | Receives dynamic IP configuration from the server.                      |
+| TFTP                | 69              | UDP                     | Transfers files, often used in network booting or configuration tasks.  |
+| SNMP                | 161             | UDP                     | Manages and monitors devices on a network (e.g., routers, switches).    |
+| SNMP (Trap)         | 162             | UDP                     | Receives alerts or notifications from managed devices.                  |
+| RDP                 | 3389            | TCP                     | Provides remote desktop access to Windows systems.                      |
+| SIP                 | 5060            | TCP/UDP                 | Manages signaling for voice over IP (VoIP) and multimedia sessions.     |
+| SIP (Secure)        | 5061            | TCP                     | Secure version of SIP using encryption for VoIP communications.         |
 
 
 
