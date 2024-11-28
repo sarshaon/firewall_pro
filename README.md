@@ -179,7 +179,11 @@ Then-
 ##### Now In macos:
 - Press Ctrl + O to save
 - Enter to confirm
-- Ctrl + X to exit
+- Ctrl + X to exit  
+Now restart your netwrok using:   
+`sudo systemctl restart networking`  
+  
+
 
 ![VM list](./ss18.png)
 
@@ -187,8 +191,14 @@ Now if I check check the ifconfig again:
 ![VM list](./ss8.png)
 
 
-BOOM! IP: 192.168.1.197 is assigned for the adapter.  
-If you find any vm is not having any ip then use this same process to assign.  
+BOOM! IP: 172.168.1.197 is assigned for the adapter.  
+
+Now set the ip device1,device2 & device4 using same method. Now one thing to remember. As device1 will be connected to the eth1 port of firewall and device2 & device4 will be connected to firewall's eth0 port we'll have to create two different network in those 2 ports. That's why ip of internal part(device1, Firewall's eth1) starts with 192.168.x.x and IP of external part(eth0 of firewall,device2,device4) starts with 172.168.x.x Sor remember to differentiate these two networks. This will make the connection according to the diagram mentioned in the picture.  
+  
+I've set the IP of device1: 192.168.1.179
+device2 IP: 172.168.1.189
+device4 IP: 172.168.1.192
+Make sure any of those IP don't match with others.
 
 ## Verify /etc/hosts configuration
 The /etc/hosts file serves as a local, static DNS (Domain Name System) lookup table. When a device or service attempts to resolve a hostname, the system checks /etc/hosts before querying an external DNS server. With the /etc/hosts file configured on all VMs, you don’t need a DNS server to resolve hostnames. This is especially useful for isolated networks like mine (with virtual machines), where a DNS server may not be present.The VMs can communicate with each other by their hostnames.   
@@ -197,19 +207,14 @@ The /etc/hosts file serves as a local, static DNS (Domain Name System) lookup ta
 before configuring check hosts are already available or not: cat /etc/hosts.
 You'll see other hostnames are not connected yet.Now-   
 
-1.Type: sudo nano /etc/hosts
+1.Type: `sudo nano /etc/hosts`
  <hr>
 2. Enter your IP addresses along with vm names like this- 
-  
-  <br>
-192.168.1.197  firewall.example.com firewall  <br>
-192.168.1.188  firewall.internal.example.com firewall <br>
-192.168.1.190  device1.example.com device1 <br>
-192.168.1.189  device2.example.com device2 <br>
-192.168.1.192  device4.example.com device4  <br> <br>
+
+![VM list](./gg9.png)
 
 > **Note:**  
-> Do not use this IPs and device names. Use your own.
+> You should use the ips' which you've already assigned. If you've assigned different ips' then mine then don't copy my ips' here. Use your assigned ips and device names. 
 
 ##### In macos:
 - Press Ctrl + O to save
@@ -217,14 +222,22 @@ You'll see other hostnames are not connected yet.Now-
 - Ctrl + X to exit
 
 Now Check if other hosts are available or not: 
-![VM list](./ss9.png)
+![alt text](image.png)
 
 So all of them are available. Repeat this process in other VMs.
- Now  you can check if it's working or not:
- ![VM list](./ss10.png)
+### Now check connection:
+We'll use ping to check connection.
+#### At first we'll try to check connection between device 2 and firewall:
+From device2 we'll ping firewall's eth0's ip address:
+![alt text](image-1.png)
 
- So we can see that now we can directly call other VMs by their hostname.
+connection successful. Use cmd+c to terminate ping on mac. In windows this might be cntrl+c.  
 
+#### Checking connection of device2 with the internal adapter of firewall:
+![](image-2.png)
+No connection as 0 recieved packages. So device2 has no connection with firewall's eth1 adapter.
+
+In the same way you'll find device1 has a connection with firewall's eth1 adapter but has no connection with device2,device4,firewall's eth0. device4 will have the same connection like device2. You may check all of this of your own.
 
 ## Enabling IP forwarding on the Firewall VM
 Enabling IP forwarding on the Firewall VM is an essential step to allow the firewall to route traffic between different network interfaces. By default, most Linux distributions have IP forwarding disabled for security reasons. When IP forwarding is enabled, the firewall can forward network traffic between the two network interfaces (e.g., eth0 and eth1) to allow proper routing of packets between the external and internal networks.
@@ -253,7 +266,7 @@ This reloads the system parameters from the configuration file and enables IP fo
 
 > **Note:**  
 > Why enabling IP Forwarding?  
-==> [click here](#ipForwarding) 
+==> [click here](#ipforwarding) 
 
 
 
@@ -262,27 +275,27 @@ This reloads the system parameters from the configuration file and enables IP fo
 #### Using Telnet:
 Device 2 will be connected to firewall.  
 > **Note:**  
-> At first check your telnet. you can check it by trying to connect to the own vm. for device4 I'm trying telnet 192.168.1.192 command to check if it connects or not. For me it was not connecting at first.![VM list](./ss19.png) So I configured the telnet first using openbsd-inetd. To know how I configured it [click here](#telnetConfigure) 
+> At first check your telnet. you can check it by trying to connect to the own vm. for device4 I'm trying telnet 192.168.1.192(don't get confused seeing 192. I tested it before when it had ip 192.) command to check if it connects or not. For me it was not connecting at first.![VM list](./ss19.png) So I configured the telnet first using openbsd-inetd. To know how I configured it [click here](#telnetConfigure) 
 
-![](./ss111.png)
-Here from firewall's terminal we're using device2's terminal. Using telnet this connection is made.
+![](image-3.png)
+Here from firewall's terminal we're using device2's terminal. Using telnet this connection is made. To terminate it simply close the terminal window.
 
 #### Using ssh:
 > **Note:**  
-> At first check your telnet. you can check it by trying to connect to the own vm. for device4 I'm trying telnet 192.168.1.192 command to check if it connects or not. For me it was not connecting at first.![VM list](./ss112.png) So I configured the telnet first using openbsd-inetd. To know how I configured it [click here](#sshConfigure) 
+> At first check your telnet. you can check it by trying to connect to the own vm. for device4 I'm trying telnet 192.168.1.192 command to check if it connects or not. For me it was not connecting at first.![VM list](./ss112.png) So I configured the telnet first using openbsd-inetd. To know how I configured it [sshConfigure](#sshConfigure)
 
 
-![](./ss115.png)
+![](image-4.png)
 Here from firewall's terminal we're using device2's terminal. Using ssh this connection is made.
 
 #### Connecting with ftp:
 Installing ftp:
 ![](./ss1111.png)
-![](./ss1112.png)
-through ftp we are accessing to the target device's Music folder
+![](image-5.png)
+through ftp we are accessing to the target device's Music folder. Here we've used dir and cd commands.
 
 #### Connecting with elinks:
-To enable elinks first install it.
+To enable elinks first install it. It'll be 172 instead of 192. Don't get confused. 
 ![](./ssw.png)
 Then enable the apache server:
 ![](./ssww.png)
@@ -305,6 +318,8 @@ ping is working fine.
 So all the connectivities are perfect.  
   
 Now going to action.
+
+## `At first while writing this article I made the setup of all vm's IP to 192.x.x.x But later I changed some of it to 172 in order to make the connection with proper setup. So whenever you'll see 192 for device2,device4,firewall's eth0 just replace it with 172. Otherwise everything is okay here. Due to laziness I haven't edited the article.`
 
 ### Block IP Address, Network and all incoming connections:
 syntax: iptables type_of_firewall rule_add_or_rmv direction IP Action_accpet_or_drop
@@ -361,10 +376,86 @@ Now restore: iptables-restore <input-rules-x
 now checking: iptables -L Input -n
 
 ### blocking ping:
-block all ping's on firewall:
+block all ping's on firewall: as ping is under icmp so blocking icmp will block ping.  
+
 ![](./ping1.png)
-trying to ping firewall from device2:
-![](./ping2.png)
+trying to ping firewall from device2:  
+
+![](./ping3.png)  
+
+Ping is not working as expected. 100% packet loss.
+
+trying to ping device2 from firewall:  
+![](./ping4.png)  
+Firewall also can't ping.  
+
+
+click here to know about icmp: [ICMP Details](#icmp-details)  
+
+> **Note:**  
+> When we ping in input direction of Firewall vm: it means devices will send echo-request to firewall and firewall will send echo-reply to devices. Now no matter whether you are trying to ping from devices to firewall or firewall to devices, echo-request will mean to send request from devices and reply means firewall to devices.
+
+  
+#### Blocking ping request:
+Here we won't block the entire icmp.If we block the request part only it will block devices to send firewall request but firewall can send ping to devices cz reply is not blocked. We'll just block the echo-request from icmp in input direction:
+
+![](./ping22.png) 
+This will block the input ping-request of firewall. That means no device will be able to ping firewall. But firewall can ping others.  
+
+Check the rule:  
+![](./ping25.png)   
+line-number sets the rule number. It helps to numbering the rules if there are so many rules.  
+  
+Checking just the input Line:
+
+![](./ping26.png) 
+
+Trying to ping from device2 to firewall:
+
+![](./ping23.png)
+Here the scenerio is when device2 is snding echo-request to firewall, firewall is blocking that at the input stage for firewall vm. Since the requests are blocked, Firewall does not send back any echo-reply(echo response).So device2 failed to recieve replies from firewall. So packet loss 100%. (means no connectivity to the target)
+
+![](./ping24.png)   
+But Firewall successfully pinged device2.It's because while firewall is sending request to device2 it means request is in output direction but device2 will send echo-reply which will be the input of firewall which is not blocked. Which we wanted. But in the previous one it was blocked from the both sides.
+  
+#### Blocking ping-reply:
+This is the opposite of ping-request. If we apply this on firewall in input direction we can't ping from firewall but we can ping to firewall. 
+Applying rule:  
+
+![](./ping31.png)   
+Here previous rule is replaced by -R. and 1 represent rule number.
+
+Ping from device2:  
+
+![](./ping33.png)   
+Ping successful. Because device2 is sending request and request is not blocked in input side of Firewall. So a reply will be send back for this.
+
+Ping from firewall:  
+![](./ping32.png)    
+Ping failed. Because firewall is trying to send request to device2 but when device2 is sending back echo-reply it will be blocked as in INPUT side of firewall reply is blocked.
+
+Check the rule:  
+![](./ping35.png) 
+The verbose mode -v provides detailed information about what the command is doing. Here it's providing the information about how many packets and data are being transmitted.  
+We can make the counter 0(pkts,bytes) using iptables -L INPUT -Z
+
+Now to remove all the rules use flash: iptables -F
+
+## From now on every ip is okay. You don't have to be worry about 192 & 172 again.  
+### Block ping on FORWARD direction:  
+Now if traffic comes from device2 to device1 it will go through firewall which if forwarding. So we'll block ping from device2 to device1.  
+  
+At first checking that if device1 and device2 can ping each other or not:  
+![](./ping41.png) 
+![](./ping42.png) 
+Both are able to ping each other.  
+
+#### Now blocking ping in forward direction:  
+![](./ping43.png) 
+here in Firewall vm, we are trying to block forward pings from source 192.168.1.189 to destination 192.168.1.179.   
+
+
+
 
 ### Filtering based on MACAddress:
 syntax: iptables -A input -m mac --mac-source mac_address -j drop
@@ -374,8 +465,33 @@ syntax: iptables -A INPUT -p tcp -s ip_address -j drop
 
 
 
-<!-- 
-## sshConfigure
+## ICMP Details
+
+**ICMP (Internet Control Message Protocol)** is a network protocol used by devices in a network (like routers, switches, and computers) to send error messages and operational information. It is primarily used for diagnostic and control purposes. ICMP operates as part of the Internet Protocol (IP) suite and is crucial for maintaining communication between devices.  
+
+### Key Features of ICMP:
+1. **Error Reporting:** ICMP reports issues such as unreachable destinations, network congestion, or time exceeded (TTL expired).
+2. **Diagnostic Tools:** It powers tools like `ping` and `traceroute`:
+   - **Ping:** Checks connectivity and measures round-trip time between two devices.
+   - **Traceroute:** Tracks the route packets take to a destination.
+3. **Lightweight:** It doesn't carry data like TCP or UDP but works as a helper protocol.
+
+### Common ICMP Messages:
+1. **Echo Request/Reply:** Used by the `ping` command to test connectivity. An Echo Request is a type of message sent using the Internet Control Message Protocol (ICMP). It is used to test the connectivity and responsiveness of a device on a network. When a device receives an Echo Request, it responds with an Echo Reply to confirm its presence and the ability to communicate.
+
+2. **Destination Unreachable:** Indicates that a destination is unreachable.
+3. **Time Exceeded:** Sent when a packet's TTL (Time To Live) value expires.
+4. **Redirect Message:** Advises a device to use a different route.
+
+### ICMP and Firewalls:
+When configuring firewalls (like your VM setup), managing ICMP traffic is crucial because:
+- Allowing ICMP helps with network troubleshooting.
+- Blocking ICMP (or specific types of messages)
+
+
+
+
+## ssh Configure
 
 ![](./ss113.png)
 ![](./ss114.png)
@@ -393,7 +509,7 @@ Telnet is now connected.
 
 
 
-## ipForwarding
+## IP  Forwarding
 ### Why Enabling IP Forwarding?
 
 - **Traffic routing**: Enabling IP forwarding allows the firewall to route traffic between the two network interfaces (`eth0` and `eth1`). This is necessary for proper network communication between the external VMs (Device2 and Device4) and the internal VM (Device1).
@@ -401,9 +517,9 @@ Telnet is now connected.
 - **Firewall functionality**: The firewall VM needs to forward packets between the internal and external networks while filtering or modifying them based on your firewall rules.
 
 
- --> 
 
-<!-- 
+
+
 ## BridgedNetwork
 Switching the network adapter option in VMware Fusion from NAT (Network Address Translation) to Bridged Network changes how your virtual machine (VM) connects to your network. Here's what happens:
 
@@ -429,7 +545,6 @@ Switching the network adapter option in VMware Fusion from NAT (Network Address 
 
 
 
-<!-- 
 ## Subfield 1
 # Network Address Translation (NAT)
 
@@ -487,4 +602,4 @@ When these devices want to access the internet, the router (with public IP `203.
 1. **Device A** sends a packet to `www.example.com`. The router changes the source address from `192.168.1.2` to `203.0.113.5` and assigns a unique port (e.g., `1024`).
 2. **Device B** sends a packet to the same destination. The router changes the source address from `192.168.1.3` to `203.0.113.5` but assigns a different port (e.g., `1025`).
 
-When the response comes back to the router at `203.0.113.5`, the router uses the port numbers to direct the responses to the correct internal device. -->
+When the response comes back to the router at `203.0.113.5`, the router uses the port numbers to direct the responses to the correct internal device.
